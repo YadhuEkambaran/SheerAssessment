@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">SheerAssessment</string>
+    <string name="search_bar_hint">Search...</string>
+
+    <string name="title_search_menu">Search</string>
+    <string name="follower_format">%1$s Followers</string>
+    <string name="loading_text">Loading...</string>
+    <string name="no_data_text">No Data</string>
+</resources>
