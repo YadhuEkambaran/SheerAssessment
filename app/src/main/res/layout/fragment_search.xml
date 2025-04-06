@@ -10,7 +10,7 @@
         android:id="@+id/content_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="visible"
+        android:visibility="gone"
         app:constraint_referenced_ids="iv_search_avatar, tv_search_name, tv_search_username, tv_search_description, btn_search_follower_count, btn_search_following_count" />
 
     <androidx.appcompat.widget.AppCompatTextView

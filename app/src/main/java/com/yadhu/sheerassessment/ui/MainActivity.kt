@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.navigation.NavType
 import androidx.navigation.createGraph
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -13,6 +14,7 @@ import androidx.navigation.fragment.fragment
 import androidx.navigation.ui.NavigationUI
 import com.yadhu.sheerassessment.R
 import com.yadhu.sheerassessment.ui.search.SearchFragment
+import com.yadhu.sheerassessment.ui.userlist.UserListFragment
 
 
 class MainActivity : AppCompatActivity() {
@@ -36,6 +38,10 @@ class MainActivity : AppCompatActivity() {
         ) {
             fragment<SearchFragment, Search> {
                 label = "Search"
+            }
+
+            fragment<UserListFragment, UserList> {
+                label = ""
             }
         }
 

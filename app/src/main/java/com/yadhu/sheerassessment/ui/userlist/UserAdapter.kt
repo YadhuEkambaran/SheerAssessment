@@ -35,7 +35,7 @@ class UserAdapter(private val onUserClick: (User) -> Unit): ListAdapter<User, Us
                 .circleCrop()
                 .into(ivAvatar)
 
-            tvName.text = user.name
+            tvName.text = user.login
             itemView.setOnClickListener { onUserClick(user) }
         }
     }

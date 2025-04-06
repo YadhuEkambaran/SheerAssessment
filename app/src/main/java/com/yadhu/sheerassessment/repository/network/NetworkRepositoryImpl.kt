@@ -18,7 +18,7 @@ class NetworkRepositoryImpl: INetworkRepository {
     init {
         val okHttpClient = OkHttpClient.Builder().addInterceptor { chain ->
             val request = chain.request().newBuilder()
-                .addHeader("Authorization", "Bearer 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")
+                .addHeader("Authorization", "Bearer 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")
                 .build()
             chain.proceed(request)
         }.build()
@@ -50,6 +50,7 @@ class NetworkRepositoryImpl: INetworkRepository {
             if (response.isSuccessful && response.body() != null) {
                 return APIResponse.Success(response.body()!!)
             }
+            Log.d(TAG, "Response:: FAILURE:: ${response.errorBody()?.string()}")
             return APIResponse.Failure(response.code(), response.message())
         } catch (ex: Exception) {
             return APIResponse.Failure(LOCAL_TRANSFORMATION_EXCEPTION, "Error while Transformation")

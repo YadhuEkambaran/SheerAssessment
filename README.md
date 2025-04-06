@@ -12,5 +12,9 @@ STARTED - 04/05/2025 12:00 PM
     Added business logic for search 
     Added Viewmodel and UI logic 
     Added XML for user list
-ENDED - 04/04/2025 3:10 PM
+ENDED - 04/05/2025 3:10 PM
+
+STARTED - 04/05/2025 7:00 PM
+    Added functionality to show for Follower and following
+ENDED - 04/05/2025 9:00 PM
 

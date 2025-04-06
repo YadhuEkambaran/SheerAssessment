@@ -1,6 +1,7 @@
 package com.yadhu.sheerassessment.ui.search
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -12,18 +13,25 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SearchView
 import androidx.constraintlayout.widget.Group
+import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.toRoute
 import com.bumptech.glide.Glide
 import com.yadhu.sheerassessment.R
 import com.yadhu.sheerassessment.model.user.User
 import com.yadhu.sheerassessment.repository.network.NetworkRepositoryImpl
+import com.yadhu.sheerassessment.ui.Search
+import com.yadhu.sheerassessment.ui.UserList
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+
+private const val TAG = "SearchFragment"
 
 class SearchFragment: Fragment() {
 
@@ -62,10 +70,35 @@ class SearchFragment: Fragment() {
         btnFollower = view.findViewById(R.id.btn_search_follower_count)
         btnFollowing = view.findViewById(R.id.btn_search_following_count)
 
-        contentGroup.visibility = View.GONE
-        tvSearchMessage.visibility = View.GONE
-
+        getArgumentsReceived()
+        setupUserInteractions()
         setupObservers()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "Query:: ${mSearchViewModel.searchQuery.value}")
+    }
+
+    private fun getArgumentsReceived() {
+        val search = findNavController().getBackStackEntry<Search>().toRoute<Search>()
+        search.username?.let {
+            if (it.isNotEmpty()) {
+                mSearchViewModel.updateSearchQuery(it)
+            }
+        }
+    }
+
+    private fun setupUserInteractions() {
+        val navController = findNavController()
+
+        btnFollower.setOnClickListener {
+            navController.navigate(route = UserList(tvUserName.text.toString(), true))
+        }
+
+        btnFollowing.setOnClickListener {
+            navController.navigate(route = UserList(tvUserName.text.toString(), false))
+        }
     }
 
     private fun setupObservers() {
@@ -74,6 +107,7 @@ class SearchFragment: Fragment() {
                 when (state) {
                     is SearchUIState.NoData -> {
                         changeContentVisibility(state = false)
+                        Log.d(TAG, "Message:: ${state.message}")
                         setMessage(state.code, getString(R.string.no_data_text))
                     }
 
@@ -103,6 +137,7 @@ class SearchFragment: Fragment() {
                 val searchView = searchMenuItem.actionView as SearchView
 
                 searchView.queryHint = "Search"
+                searchView.setQuery(mSearchViewModel.searchQuery.value, true)
 
                 searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(query: String?): Boolean {
@@ -122,7 +157,7 @@ class SearchFragment: Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return false
             }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        }, viewLifecycleOwner, Lifecycle.State.STARTED)
     }
 
     private fun changeContentVisibility(state: Boolean) {
