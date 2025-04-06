@@ -6,4 +6,6 @@
     <string name="following_format">%1$s Following</string>
     <string name="loading_text">Loading...</string>
     <string name="no_data_text">No Data</string>
+    <string name="following_no_one">Sorry, You are following no one!</string>
+    <string name="follower_no_one">Sorry, No one following you</string>
 </resources>

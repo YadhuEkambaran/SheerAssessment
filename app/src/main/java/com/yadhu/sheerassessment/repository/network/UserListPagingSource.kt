@@ -1,6 +1,5 @@
 package com.yadhu.sheerassessment.repository.network
 
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.yadhu.sheerassessment.model.user.User

@@ -8,6 +8,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
@@ -23,6 +24,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.toRoute
 import com.bumptech.glide.Glide
+import com.facebook.shimmer.Shimmer
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.yadhu.sheerassessment.R
 import com.yadhu.sheerassessment.model.user.User
 import com.yadhu.sheerassessment.repository.network.NetworkRepositoryImpl
@@ -36,6 +39,7 @@ private const val TAG = "SearchFragment"
 
 class SearchFragment: Fragment() {
 
+    private lateinit var shimmerContainer: ShimmerFrameLayout
     private lateinit var contentGroup: Group
     private lateinit var tvSearchMessage: AppCompatTextView
     private lateinit var ivAvatar: AppCompatImageView
@@ -63,6 +67,7 @@ class SearchFragment: Fragment() {
         getArgumentsReceived()
         setupToolbar()
 
+        shimmerContainer = view.findViewById(R.id.search_shimmer_view_container)
         contentGroup = view.findViewById(R.id.content_group)
         tvSearchMessage = view.findViewById(R.id.tv_search_message)
         ivAvatar = view.findViewById(R.id.iv_search_avatar)
@@ -72,6 +77,7 @@ class SearchFragment: Fragment() {
         btnFollower = view.findViewById(R.id.btn_search_follower_count)
         btnFollowing = view.findViewById(R.id.btn_search_following_count)
 
+        setupShimmer()
         setupUserInteractions()
         setupObservers()
     }
@@ -89,10 +95,22 @@ class SearchFragment: Fragment() {
         val navController = findNavController()
 
         btnFollower.setOnClickListener {
+            val tag = btnFollower.tag as Int
+            if (tag == 0) {
+                showToastMessage(getString(R.string.follower_no_one))
+                return@setOnClickListener
+            }
+
             navController.navigate(route = UserList(tvUserName.text.toString(), true))
         }
 
         btnFollowing.setOnClickListener {
+            val tag = btnFollowing.tag as Int
+            if (tag == 0) {
+                showToastMessage(getString(R.string.following_no_one))
+                return@setOnClickListener
+            }
+
             navController.navigate(route = UserList(tvUserName.text.toString(), false))
         }
     }
@@ -102,19 +120,22 @@ class SearchFragment: Fragment() {
             mSearchViewModel.uiState.collectLatest { state ->
                 when (state) {
                     is SearchUIState.NoData -> {
-                        changeContentVisibility(state = false)
-                        Log.d(TAG, "Message:: ${state.message}")
-                        setMessage(getString(R.string.no_data_text))
+                        if (state.isLoading) {
+                            shimmerContainer.startShimmer()
+                            showLoading()
+                        } else {
+                            shimmerContainer.stopShimmer()
+                            Log.d(TAG, "Message:: ${state.message}")
+                            showMessage(getString(R.string.no_data_text))
+                        }
                     }
 
                     is SearchUIState.HasData -> {
-                        if (state.isLoading) {
-                            changeContentVisibility(state = false)
-                            setMessage(getString(R.string.loading_text))
-                        } else {
-                            changeContentVisibility(state = true)
-                            setContent(state.data)
-                        }
+                        shimmerContainer.stopShimmer()
+                        shimmerContainer.visibility = View.GONE
+
+                        showContent()
+                        setContent(state.data)
                     }
                 }
 
@@ -170,16 +191,6 @@ class SearchFragment: Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun changeContentVisibility(state: Boolean) {
-        if (state) {
-            contentGroup.visibility = View.VISIBLE
-            tvSearchMessage.visibility = View.GONE
-        } else {
-            contentGroup.visibility = View.GONE
-            tvSearchMessage.visibility = View.VISIBLE
-        }
-    }
-
     private fun setContent(user: User) {
         Glide.with(this)
             .load(user.avatar_url)
@@ -190,13 +201,41 @@ class SearchFragment: Fragment() {
         tvUserName.text = user.login
         tvDescription.text = user.bio
         btnFollower.text = getString(R.string.follower_format, user.followers.toString())
+        btnFollower.tag = user.followers
         btnFollowing.text = getString(R.string.following_format, user.following.toString())
+        btnFollowing.tag = user.following
     }
 
-    private fun setMessage(message: String?) {
+    private fun showLoading() {
+        contentGroup.visibility = View.GONE
+        tvSearchMessage.visibility = View.GONE
+        shimmerContainer.visibility = View.VISIBLE
+    }
+
+    private fun showMessage(message: String?) {
         // For now it is setting to "No data" as there is not error code check required
         message?.let {
             tvSearchMessage.text = it
+            contentGroup.visibility = View.GONE
+            shimmerContainer.visibility = View.GONE
+            tvSearchMessage.visibility = View.VISIBLE
+
         }
+    }
+
+    private fun showContent() {
+        contentGroup.visibility = View.VISIBLE
+        tvSearchMessage.visibility = View.GONE
+        shimmerContainer.visibility = View.GONE
+    }
+
+    private fun setupShimmer() {
+        val shimmerBuilder = Shimmer.AlphaHighlightBuilder()
+        shimmerBuilder.setDirection(Shimmer.Direction.TOP_TO_BOTTOM).setTilt(0f)
+        shimmerContainer.setShimmer(shimmerBuilder.build())
+    }
+
+    private fun showToastMessage(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 }
