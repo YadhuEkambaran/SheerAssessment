@@ -7,33 +7,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_user_avatar"
+        android:id="@+id/iv_user_avatar_shimmer"
         android:layout_width="@dimen/user_avatar_size_small"
         android:layout_height="@dimen/user_avatar_size_small"
-        tools:src="@mipmap/ic_launcher"
+        android:background="@color/shimmerColor"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/tv_user_name"
+        android:id="@+id/tv_user_name_shimmer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        tools:text="Yadhukrishnan"
         android:textSize="@dimen/_20sp"
+        android:background="@color/shimmerColor"
         android:fontFamily="sans-serif-medium"
         android:paddingHorizontal="@dimen/_16dp"
+        android:layout_marginStart="@dimen/_8dp"
         android:textColor="@android:color/black"
-        app:layout_constraintStart_toEndOf="@id/iv_user_avatar"
-        app:layout_constraintTop_toTopOf="@id/iv_user_avatar"
-        app:layout_constraintEnd_toStartOf="@id/iv_right_arrow"
-        app:layout_constraintBottom_toBottomOf="@id/iv_user_avatar"/>
+        app:layout_constraintStart_toEndOf="@id/iv_user_avatar_shimmer"
+        app:layout_constraintTop_toTopOf="@id/iv_user_avatar_shimmer"
+        app:layout_constraintEnd_toStartOf="@id/iv_right_arrow_shimmer"
+        app:layout_constraintBottom_toBottomOf="@id/iv_user_avatar_shimmer"/>
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_right_arrow"
+        android:id="@+id/iv_right_arrow_shimmer"
         android:layout_width="@dimen/arrow_size"
         android:layout_height="@dimen/arrow_size"
         app:layout_constraintEnd_toEndOf="parent"
         android:src="@drawable/ic_right_arrow"
-        app:layout_constraintTop_toTopOf="@id/iv_user_avatar"
-        app:layout_constraintBottom_toBottomOf="@id/iv_user_avatar"/>
+        app:layout_constraintTop_toTopOf="@id/iv_user_avatar_shimmer"
+        app:layout_constraintBottom_toBottomOf="@id/iv_user_avatar_shimmer"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

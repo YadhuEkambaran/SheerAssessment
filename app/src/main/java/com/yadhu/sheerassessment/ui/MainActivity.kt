@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.createGraph
 import androidx.navigation.findNavController
@@ -18,6 +19,9 @@ import com.yadhu.sheerassessment.ui.userlist.UserListFragment
 
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var navController: NavController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -31,20 +35,41 @@ class MainActivity : AppCompatActivity() {
     private fun setupNavController() {
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
+        navController = navHostFragment.navController
 
         navController.graph = navController.createGraph(
             startDestination = Search(username = "")
         ) {
             fragment<SearchFragment, Search> {
-                label = "Search"
+
             }
 
             fragment<UserListFragment, UserList> {
-                label = ""
+
             }
         }
+    }
 
-        NavigationUI.setupActionBarWithNavController(this, navController)
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    fun changeToolbarTitleVisibility(state: Boolean) {
+        supportActionBar?.run {
+            setDisplayShowTitleEnabled(state)
+            setDisplayHomeAsUpEnabled(state)
+        }
+    }
+
+    fun setActionBarTitle(title: String) {
+        supportActionBar?.let {
+            it.title = title.capitalizeFirstChar()
+        }
+    }
+
+    private fun String.capitalizeFirstChar(): String {
+        return replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase() else it.toString()
+        }
     }
 }

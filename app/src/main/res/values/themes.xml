@@ -13,4 +13,16 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="SheerToolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="titleTextColor">@color/white</item>
+        <item name="navigationIcon">@drawable/ic_back_arrow</item>
+    </style>
+
+    <style name="SheerButton">
+        <item name="android:background">@drawable/bg_button</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="textAllCaps">false</item>
+        <item name="fontFamily">sans-serif-light</item>
+    </style>
 </resources>

@@ -13,8 +13,12 @@ interface IApiService {
     suspend fun getUser(@Path("username") username: String): Response<User>
 
     @GET("users/{username}/followers")
-    suspend fun getFollowers(@Path("username") username: String): Response<List<User>>
+    suspend fun getFollowers(@Path("username") username: String,
+                             @Query("per_page") perPage: Int = 50,
+                             @Query("page") page: Int): Response<List<User>>
 
     @GET("users/{username}/following")
-    suspend fun getFollowing(@Path("username") username: String): Response<List<User>>
+    suspend fun getFollowing(@Path("username") username: String,
+                             @Query("per_page") perPage: Int = 50,
+                             @Query("page") page: Int): Response<List<User>>
 }

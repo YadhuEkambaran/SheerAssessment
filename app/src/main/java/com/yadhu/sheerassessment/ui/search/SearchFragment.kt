@@ -13,7 +13,7 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SearchView
 import androidx.constraintlayout.widget.Group
-import androidx.core.os.bundleOf
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -26,6 +26,7 @@ import com.bumptech.glide.Glide
 import com.yadhu.sheerassessment.R
 import com.yadhu.sheerassessment.model.user.User
 import com.yadhu.sheerassessment.repository.network.NetworkRepositoryImpl
+import com.yadhu.sheerassessment.ui.MainActivity
 import com.yadhu.sheerassessment.ui.Search
 import com.yadhu.sheerassessment.ui.UserList
 import kotlinx.coroutines.flow.collectLatest
@@ -59,7 +60,8 @@ class SearchFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupSearchView()
+        getArgumentsReceived()
+        setupToolbar()
 
         contentGroup = view.findViewById(R.id.content_group)
         tvSearchMessage = view.findViewById(R.id.tv_search_message)
@@ -70,14 +72,8 @@ class SearchFragment: Fragment() {
         btnFollower = view.findViewById(R.id.btn_search_follower_count)
         btnFollowing = view.findViewById(R.id.btn_search_following_count)
 
-        getArgumentsReceived()
         setupUserInteractions()
         setupObservers()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d(TAG, "Query:: ${mSearchViewModel.searchQuery.value}")
     }
 
     private fun getArgumentsReceived() {
@@ -108,13 +104,13 @@ class SearchFragment: Fragment() {
                     is SearchUIState.NoData -> {
                         changeContentVisibility(state = false)
                         Log.d(TAG, "Message:: ${state.message}")
-                        setMessage(state.code, getString(R.string.no_data_text))
+                        setMessage(getString(R.string.no_data_text))
                     }
 
                     is SearchUIState.HasData -> {
                         if (state.isLoading) {
                             changeContentVisibility(state = false)
-                            setMessage(100, getString(R.string.loading_text))
+                            setMessage(getString(R.string.loading_text))
                         } else {
                             changeContentVisibility(state = true)
                             setContent(state.data)
@@ -126,7 +122,15 @@ class SearchFragment: Fragment() {
         }
     }
 
-    private fun setupSearchView() {
+    private fun setupToolbar() {
+        if (findNavController().previousBackStackEntry != null) {
+            (activity as MainActivity).changeToolbarTitleVisibility(true)
+            (activity as MainActivity).setActionBarTitle(mSearchViewModel.searchQuery.value)
+            return
+        } else {
+            (activity as MainActivity).changeToolbarTitleVisibility(false)
+        }
+
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -135,9 +139,15 @@ class SearchFragment: Fragment() {
 
                 val searchMenuItem = menu.findItem(R.id.action_search)
                 val searchView = searchMenuItem.actionView as SearchView
+                searchView.maxWidth = Int.MAX_VALUE
+                searchView.setIconifiedByDefault(false)
+                searchView.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_searchbar)
 
-                searchView.queryHint = "Search"
-                searchView.setQuery(mSearchViewModel.searchQuery.value, true)
+                searchView.queryHint = "Search username"
+                if (mSearchViewModel.searchQuery.value.isNotEmpty()) {
+                    searchView.onActionViewExpanded()
+                    searchView.setQuery(mSearchViewModel.searchQuery.value, true)
+                }
 
                 searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(query: String?): Boolean {
@@ -157,7 +167,7 @@ class SearchFragment: Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return false
             }
-        }, viewLifecycleOwner, Lifecycle.State.STARTED)
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     private fun changeContentVisibility(state: Boolean) {
@@ -180,10 +190,10 @@ class SearchFragment: Fragment() {
         tvUserName.text = user.login
         tvDescription.text = user.bio
         btnFollower.text = getString(R.string.follower_format, user.followers.toString())
-        btnFollowing.text = getString(R.string.follower_format, user.following.toString())
+        btnFollowing.text = getString(R.string.following_format, user.following.toString())
     }
 
-    private fun setMessage(code: Int?, message: String?) {
+    private fun setMessage(message: String?) {
         // For now it is setting to "No data" as there is not error code check required
         message?.let {
             tvSearchMessage.text = it

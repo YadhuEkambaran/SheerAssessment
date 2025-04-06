@@ -1,7 +1,6 @@
 package com.yadhu.sheerassessment.ui.userlist
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -15,19 +14,26 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.toRoute
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.facebook.shimmer.Shimmer
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.yadhu.sheerassessment.R
 import com.yadhu.sheerassessment.model.user.User
 import com.yadhu.sheerassessment.repository.network.NetworkRepositoryImpl
+import com.yadhu.sheerassessment.ui.MainActivity
 import com.yadhu.sheerassessment.ui.Search
 import com.yadhu.sheerassessment.ui.UserList
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 
 private const val TAG = "UserListFragment"
 
-class UserListFragment: Fragment() {
+class UserListFragment : Fragment() {
+
+    private lateinit var mShimmerContainer: ShimmerFrameLayout
 
     private val mUserAdapter: UserAdapter = UserAdapter(::onUserClick)
 
@@ -46,19 +52,25 @@ class UserListFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupToolbar()
-
+        mShimmerContainer = view.findViewById(R.id.shimmer_view_container)
         val rvUserList: RecyclerView = view.findViewById(R.id.rv_user_list)
+
+        setArgumentsReceived()
+        setupToolbar()
+        setupShimmer()
+
         rvUserList.apply {
             adapter = mUserAdapter
             layoutManager = LinearLayoutManager(this.context)
         }
 
-        setArgumentsReceived()
         setupUIStateObserver()
     }
 
     private fun setupToolbar() {
+        (activity as MainActivity).changeToolbarTitleVisibility(true)
+        (activity as MainActivity).setActionBarTitle(mUserListViewModel.username.value)
+
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -78,18 +90,29 @@ class UserListFragment: Fragment() {
 
     private fun setupUIStateObserver() {
         lifecycleScope.launch {
-            mUserListViewModel.uiState.collect { state ->
-                when (state) {
-                    is UserListUIState.HasData -> {
-                        mUserAdapter.submitList(state.data)
-                    }
+            mUserListViewModel.users.collect { users ->
+                mUserAdapter.submitData(users)
+            }
+        }
 
-                    is UserListUIState.NoData -> {
-                        Log.d(TAG, "Empty Data :: ${state.message}")
-                    }
+        lifecycleScope.launch {
+            mUserAdapter.loadStateFlow.collectLatest { loadStates ->
+                if (loadStates.refresh is LoadState.Loading) {
+                    mShimmerContainer.startShimmer()
+                    mShimmerContainer.visibility = View.VISIBLE
+                } else if (loadStates.refresh is LoadState.NotLoading) {
+                    mShimmerContainer.stopShimmer()
+                    mShimmerContainer.visibility = View.GONE
+
                 }
             }
         }
+    }
+
+    private fun setupShimmer() {
+        val shimmerBuilder = Shimmer.AlphaHighlightBuilder()
+        shimmerBuilder.setDirection(Shimmer.Direction.TOP_TO_BOTTOM).setTilt(0f)
+        mShimmerContainer.setShimmer(shimmerBuilder.build())
     }
 
     private fun onUserClick(user: User) {

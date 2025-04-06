@@ -18,7 +18,7 @@ class NetworkRepositoryImpl: INetworkRepository {
     init {
         val okHttpClient = OkHttpClient.Builder().addInterceptor { chain ->
             val request = chain.request().newBuilder()
-                .addHeader("Authorization", "Bearer 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")
+                .addHeader("Authorization", "Bearer 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")
                 .build()
             chain.proceed(request)
         }.build()
@@ -37,12 +37,12 @@ class NetworkRepositoryImpl: INetworkRepository {
         return transform(apiService.getUser(username))
     }
 
-    override suspend fun getFollowers(username: String): APIResponse<List<User>> {
-        return transform(apiService.getFollowers(username))
+    override suspend fun getFollowers(username: String, page: Int): APIResponse<List<User>> {
+        return transform(apiService.getFollowers(username, page = page))
     }
 
-    override suspend fun getFollowing(username: String): APIResponse<List<User>> {
-        return transform(apiService.getFollowing(username))
+    override suspend fun getFollowing(username: String, page: Int): APIResponse<List<User>> {
+        return transform(apiService.getFollowing(username, page = page))
     }
 
     private fun <T> transform(response: Response<T>): APIResponse<T> {
