@@ -7,6 +7,9 @@ import retrofit2.http.Header
 import retrofit2.http.Path
 import retrofit2.http.Query
 
+/**
+ * Retrofit API interface for defining all the APIs and its semantics.
+ */
 interface IApiService {
 
     @GET("users/{username}")

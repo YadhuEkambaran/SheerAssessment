@@ -18,7 +18,7 @@ class NetworkRepositoryImpl: INetworkRepository {
     init {
         val okHttpClient = OkHttpClient.Builder().addInterceptor { chain ->
             val request = chain.request().newBuilder()
-                .addHeader("Authorization", "Bearer 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")
+                .addHeader("Authorization", "Bearer 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")
                 .build()
             chain.proceed(request)
         }.build()

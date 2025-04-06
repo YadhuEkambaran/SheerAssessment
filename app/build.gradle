@@ -48,6 +48,7 @@ dependencies {
     implementation libs.glide
     implementation libs.paging
     implementation libs.shimmer
+    implementation libs.swipe.refresh
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit

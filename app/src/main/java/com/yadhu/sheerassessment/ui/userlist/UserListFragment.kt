@@ -17,6 +17,7 @@ import androidx.navigation.toRoute
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.facebook.shimmer.Shimmer
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.yadhu.sheerassessment.R
@@ -34,6 +35,8 @@ private const val TAG = "UserListFragment"
 class UserListFragment : Fragment() {
 
     private lateinit var mShimmerContainer: ShimmerFrameLayout
+    private lateinit var mSwipeRefreshContainer: SwipeRefreshLayout
+    private lateinit var rvUserList: RecyclerView
 
     private val mUserAdapter: UserAdapter = UserAdapter(::onUserClick)
 
@@ -53,7 +56,8 @@ class UserListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         mShimmerContainer = view.findViewById(R.id.shimmer_view_container)
-        val rvUserList: RecyclerView = view.findViewById(R.id.rv_user_list)
+        mSwipeRefreshContainer = view.findViewById(R.id.swipe_refresh_layout)
+        rvUserList = view.findViewById(R.id.rv_user_list)
 
         setArgumentsReceived()
         setupToolbar()
@@ -92,19 +96,23 @@ class UserListFragment : Fragment() {
         lifecycleScope.launch {
             mUserListViewModel.users.collect { users ->
                 mUserAdapter.submitData(users)
+                showContent()
             }
         }
 
         lifecycleScope.launch {
             mUserAdapter.loadStateFlow.collectLatest { loadStates ->
                 if (loadStates.refresh is LoadState.Loading) {
-                    mShimmerContainer.startShimmer()
-                    mShimmerContainer.visibility = View.VISIBLE
+                    showLoading()
                 } else if (loadStates.refresh is LoadState.NotLoading) {
-                    mShimmerContainer.stopShimmer()
-                    mShimmerContainer.visibility = View.GONE
-
+                    showContent()
                 }
+            }
+        }
+
+        lifecycleScope.launch {
+            mSwipeRefreshContainer.setOnRefreshListener {
+                mUserAdapter.refresh()
             }
         }
     }
@@ -118,5 +126,18 @@ class UserListFragment : Fragment() {
     private fun onUserClick(user: User) {
         val navController = findNavController()
         navController.navigate(route = Search(user.login))
+    }
+
+    private fun showLoading() {
+        rvUserList.visibility = View.GONE
+        mShimmerContainer.startShimmer()
+        mShimmerContainer.visibility = View.VISIBLE
+    }
+
+    private fun showContent() {
+        mShimmerContainer.stopShimmer()
+        mShimmerContainer.visibility = View.GONE
+        mSwipeRefreshContainer.isRefreshing = false
+        rvUserList.visibility = View.VISIBLE
     }
 }
